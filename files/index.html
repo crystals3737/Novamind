@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaMind — AI Content Pipeline</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M4 16L10 5l6 11H4z" fill="white" fill-opacity=".9"/><circle cx="10" cy="10" r="2.5" fill="#E1F5EE"/></svg>
+      </div>
+      <div><div class="logo-name">NovaMind</div><div class="logo-sub">AI Content Pipeline</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">Claude-powered</span>
+      <span style="font-size:11px;color:var(--text3);" id="last-run">Ready</span>
+    </div>
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="flow">
+    <div class="fs"><div class="fi fi1">✦</div><div class="fl">Topic input</div></div>
+    <div class="fa">→</div>
+    <div class="fs"><div class="fi fi2">⬡</div><div class="fl">Outline + blog draft</div></div>
+    <div class="fa">→</div>
+    <div class="fs"><div class="fi fi3">◈</div><div class="fl">3 persona newsletters</div></div>
+    <div class="fa">→</div>
+    <div class="fs"><div class="fi fi4">⊕</div><div class="fl">CRM distribution</div></div>
+    <div class="fa">→</div>
+    <div class="fs"><div class="fi fi5">◎</div><div class="fl">Analytics + insights</div></div>
+  </div>
+
+  <!-- Main tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="generate">1. Generate Content</button>
+    <button class="tab" data-tab="distribute">2. CRM + Distribute</button>
+    <button class="tab" data-tab="analytics">3. Performance</button>
+    <button class="tab" data-tab="optimize">4. Optimize ✦</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PANEL 1: GENERATE + MULTI-VERSION + REVISIONS
+  ═══════════════════════════════════════════════ -->
+  <div class="panel active" id="panel-generate">
+    <div class="card">
+      <div class="sec">Blog topic input</div>
+      <div class="irow" style="margin-bottom:10px;">
+        <div class="ig" style="flex:2;">
+          <label>Topic</label>
+          <input type="text" id="topic-input" value="AI in creative workflow automation" />
+        </div>
+        <div class="ig" style="max-width:185px;">
+          <label>Tone</label>
+          <select id="tone-select">
+            <option value="insightful and practical">Insightful &amp; practical</option>
+            <option value="conversational and friendly">Conversational</option>
+            <option value="bold and forward-thinking">Bold &amp; forward-thinking</option>
+            <option value="data-driven and analytical">Data-driven</option>
+          </select>
+        </div>
+        <div class="ig" style="max-width:160px;">
+          <label>Versions to generate</label>
+          <select id="num-versions">
+            <option value="1">1 version</option>
+            <option value="2">2 versions</option>
+            <option value="3" selected>3 versions</option>
+          </select>
+        </div>
+        <button class="btn primary" id="gen-btn" onclick="runGenerate()">Generate →</button>
+      </div>
+      <div class="prog" id="gen-prog" style="display:none;"><div class="prog-b" id="gen-prog-b" style="width:0%"></div></div>
+    </div>
+
+    <div id="blog-section" style="display:none;">
+
+      <!-- Blog versions -->
+      <div class="card">
+        <div class="row-between">
+          <div class="sec" style="margin:0;">Blog post — compare &amp; select a version</div>
+          <button class="btn sm" id="regen-blog-btn" onclick="regenBlog()">Regenerate blog versions</button>
+        </div>
+        <div class="ver-strip" id="blog-ver-strip"></div>
+        <div id="blog-outline-wrap" class="outline-wrap" style="display:none;">
+          <div class="sec" style="margin-top:10px;">Blog post outline</div>
+          <pre class="cbox short outline-pre" id="blog-outline"></pre>
+        </div>
+        <div class="sec" style="margin-top:10px;">Short-form draft (target 400–600 words)</div>
+        <div class="cbox tall" id="blog-display">Select a version above.</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px;">
+          <span style="font-size:11px;color:var(--text3);" id="blog-wc"></span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="cpbtn" onclick="copyEl('blog-display')">Copy draft</button>
+            <button class="cpbtn" onclick="exportStructuredJSON()">Export JSON</button>
+            <button class="cpbtn" onclick="exportStructuredMarkdown()">Export Markdown</button>
+          </div>
+        </div>
+
+        <!-- Blog revision panel -->
+        <div class="rev-panel">
+          <div class="rev-hdr" onclick="toggleRev('blog-rev-body','blog-rev-arrow')">
+            <span>✏️ Request a revision or suggestion on this version</span>
+            <span id="blog-rev-arrow">▸</span>
+          </div>
+          <div class="rev-body" id="blog-rev-body">
+            <div class="sec">Quick revision tags — select any that apply</div>
+            <div class="rev-tags" id="blog-rev-tags">
+              <button class="rev-tag" onclick="toggleTag(this)">Make it shorter</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Add a compelling statistic</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Stronger opening hook</button>
+              <button class="rev-tag" onclick="toggleTag(this)">More conversational</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Sharpen the CTA</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Add a real-world example</button>
+              <button class="rev-tag" onclick="toggleTag(this)">More SEO-friendly</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Bolder headline</button>
+            </div>
+            <div class="sec" style="margin-top:12px;">Or describe your revision in detail</div>
+            <div class="rev-note-row">
+              <textarea id="blog-rev-note" placeholder="e.g. Rewrite the intro to be more provocative, cite a specific statistic about creative agencies, and make the CTA mention a free trial…"></textarea>
+              <button class="btn primary" style="align-self:flex-end;" onclick="applyRevision('blog')">Apply →</button>
+            </div>
+            <div id="blog-rev-result" style="display:none;margin-top:12px;">
+              <div class="sec">Revised version — review before accepting</div>
+              <div class="cbox short" id="blog-rev-content"></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn sm primary" onclick="acceptRevision('blog')">Accept &amp; replace current version →</button>
+                <button class="btn sm ghost" onclick="discardRevision('blog')">Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Newsletter versions -->
+      <div class="card">
+        <div class="row-between">
+          <div class="sec" style="margin:0;">Newsletter — by persona &amp; version</div>
+          <div class="ptabs">
+            <button class="ptab active" onclick="switchPersona('creative',this)">Creative</button>
+            <button class="ptab" onclick="switchPersona('ops',this)">Ops</button>
+            <button class="ptab" onclick="switchPersona('founder',this)">Founder</button>
+          </div>
+        </div>
+        <div class="ver-strip" id="nl-ver-strip"></div>
+        <div class="cbox short" id="nl-display">Select a version above.</div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+          <span class="hint" id="nl-persona-label"></span>
+          <button class="cpbtn" onclick="copyEl('nl-display')">Copy</button>
+        </div>
+
+        <!-- Newsletter revision panel -->
+        <div class="rev-panel">
+          <div class="rev-hdr" onclick="toggleRev('nl-rev-body','nl-rev-arrow')">
+            <span>✏️ Request a revision or suggestion on this newsletter version</span>
+            <span id="nl-rev-arrow">▸</span>
+          </div>
+          <div class="rev-body" id="nl-rev-body">
+            <div class="sec">Quick revision tags</div>
+            <div class="rev-tags" id="nl-rev-tags">
+              <button class="rev-tag" onclick="toggleTag(this)">More urgent subject line</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Shorter email body</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Open with a question</button>
+              <button class="rev-tag" onclick="toggleTag(this)">More persona-specific pain point</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Stronger CTA</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Add social proof</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Add an emoji</button>
+              <button class="rev-tag" onclick="toggleTag(this)">More casual tone</button>
+            </div>
+            <div class="sec" style="margin-top:12px;">Or describe your revision</div>
+            <div class="rev-note-row">
+              <textarea id="nl-rev-note" placeholder="e.g. Rewrite the subject line to create curiosity without giving it all away, and add a specific time-saving claim in the first line…"></textarea>
+              <button class="btn primary" style="align-self:flex-end;" onclick="applyRevision('nl')">Apply →</button>
+            </div>
+            <div id="nl-rev-result" style="display:none;margin-top:12px;">
+              <div class="sec">Revised version — review before accepting</div>
+              <div class="cbox short" id="nl-rev-content"></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn sm primary" onclick="acceptRevision('nl')">Accept &amp; replace →</button>
+                <button class="btn sm ghost" onclick="discardRevision('nl')">Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn primary" onclick="goToTab('distribute')">Continue to distribution →</button>
+        <span class="hint">Select your preferred blog and newsletter versions first</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PANEL 2: CRM + DISTRIBUTE
+  ═══════════════════════════════════════ -->
+  <div class="panel" id="panel-distribute">
+    <div class="sec">Contact segments</div>
+    <div class="cols">
+      <div class="col">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="chip chip-c">Creative professionals</span><span class="hint">4 contacts</span></div>
+        <div class="card" style="padding:12px 16px;"><div id="contacts-creative"></div></div>
+      </div>
+      <div class="col">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="chip chip-o">Operations managers</span><span class="hint">4 contacts</span></div>
+        <div class="card" style="padding:12px 16px;"><div id="contacts-ops"></div></div>
+      </div>
+      <div class="col">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="chip chip-f">Startup founders</span><span class="hint">4 contacts</span></div>
+        <div class="card" style="padding:12px 16px;"><div id="contacts-founder"></div></div>
+      </div>
+    </div>
+    <div class="sec" style="margin-top:4px;">HubSpot API payload preview</div>
+    <div class="card">
+      <div class="apiNote">POST /crm/v3/objects/contacts &nbsp;·&nbsp; POST /marketing/v3/emails/{id}/send</div>
+      <pre class="pay" id="hubspot-payload">{}</pre>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="btn primary" id="send-btn" onclick="runSend()">Send campaign →</button>
+      <span class="hint" id="send-status"></span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       PANEL 3: ANALYTICS
+  ═══════════════════════════════════════ -->
+  <div class="panel" id="panel-analytics">
+    <div class="sec">Campaign metrics</div>
+    <div class="mgrid">
+      <div class="met"><div class="met-l">Avg open rate</div><div class="met-v" id="m-open">—</div><div class="met-d" id="m-open-d"></div></div>
+      <div class="met"><div class="met-l">Avg click rate</div><div class="met-v" id="m-click">—</div><div class="met-d" id="m-click-d"></div></div>
+      <div class="met"><div class="met-l">Total sent</div><div class="met-v" id="m-sent">—</div><div class="met-d" id="m-sent-d"></div></div>
+      <div class="met"><div class="met-l">Unsubscribes</div><div class="met-v" id="m-unsub">—</div><div class="met-d neg" id="m-unsub-d"></div></div>
+    </div>
+    <div class="sec">Performance by persona</div>
+    <div class="card"><div id="persona-perf"><p style="font-size:13px;color:var(--text3);">Run analytics to see results.</p></div></div>
+    <div class="sec" style="margin-top:4px;">Campaign log (blog title · newsletter IDs · send date)</div>
+    <div class="card"><div id="campaign-log"><p style="font-size:13px;color:var(--text3);">No campaigns logged yet. Send a campaign in tab 2 first.</p></div></div>
+    <div class="sec" style="margin-top:4px;">Performance history (stored for comparison)</div>
+    <div class="card"><div id="perf-history"><p style="font-size:13px;color:var(--text3);">Run analytics to record snapshots.</p></div></div>
+    <div id="ai-sum-wrap" style="display:none;">
+      <div class="ais"><div class="ais-l">AI performance summary</div><div id="ai-sum-text">Analyzing...</div></div>
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn primary" onclick="runAnalytics()">Fetch &amp; analyze performance →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANEL 4: OPTIMIZE
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-optimize">
+    <div class="card">
+      <div class="sec">Bonus: AI-driven content optimization</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">Based on your campaign engagement data, Claude recommends next blog topics, headline A/B variants, and persona-specific content strategies.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn primary" id="opt-btn" onclick="runOptimize()">Generate recommendations →</button>
+        <span class="hint" id="opt-status"></span>
+      </div>
+    </div>
+
+    <div id="opt-results" style="display:none;">
+
+      <!-- Next topics -->
+      <div class="card">
+        <div class="sec">Next blog topic ideas — based on engagement trends</div>
+        <div id="opt-topics"></div>
+        <div class="rev-panel" style="margin-top:12px;">
+          <div class="rev-hdr" onclick="toggleRev('opt-topic-rev-body','opt-topic-rev-arrow')">
+            <span>✏️ Refine these topic suggestions</span><span id="opt-topic-rev-arrow">▸</span>
+          </div>
+          <div class="rev-body" id="opt-topic-rev-body">
+            <div class="rev-tags">
+              <button class="rev-tag" onclick="toggleTag(this)">More SEO-focused</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Target founder pain points</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Focus on AI trends</button>
+              <button class="rev-tag" onclick="toggleTag(this)">More niche / specific</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Broader audience appeal</button>
+            </div>
+            <div class="rev-note-row" style="margin-top:10px;">
+              <textarea id="opt-topic-rev-note" placeholder="e.g. Focus on topics that would rank for small agency owners searching for Zapier alternatives…" style="min-height:55px;"></textarea>
+              <button class="btn primary" style="align-self:flex-end;" onclick="refineOptTopics()">Refine →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Headline variants -->
+      <div class="card">
+        <div class="sec">Headline A/B variants — for next campaign</div>
+        <div id="opt-headlines"></div>
+        <div class="rev-panel" style="margin-top:12px;">
+          <div class="rev-hdr" onclick="toggleRev('opt-hl-rev-body','opt-hl-rev-arrow')">
+            <span>✏️ Generate more headline variants</span><span id="opt-hl-rev-arrow">▸</span>
+          </div>
+          <div class="rev-body" id="opt-hl-rev-body">
+            <div class="rev-tags">
+              <button class="rev-tag" onclick="toggleTag(this)">More curiosity-driven</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Number-led listicle</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Question format</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Stronger urgency</button>
+              <button class="rev-tag" onclick="toggleTag(this)">Target skeptics</button>
+            </div>
+            <div class="rev-note-row" style="margin-top:10px;">
+              <textarea id="opt-hl-rev-note" placeholder="e.g. Speak directly to creative directors who are skeptical about AI replacing their team's creativity…" style="min-height:55px;"></textarea>
+              <button class="btn primary" style="align-self:flex-end;" onclick="refineOptHeadlines()">Refine →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persona tips -->
+      <div class="card">
+        <div class="sec">Persona-specific content tips</div>
+        <div id="opt-tips"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  // Import all module functions and expose them on window for inline HTML onclick handlers
+  import { loadPersistedState } from "./state.js";
+  import { runGenerate, regenBlog }                     from "./generate.js";
+  import { applyRevision, acceptRevision, discardRevision } from "./revisions.js";
+  import { runSend }                                    from "./distribute.js";
+  import { runAnalytics }                               from "./analytics.js";
+  import { runOptimize, useTopic, refineOptTopics, refineOptHeadlines } from "./optimize.js";
+  import {
+    initTabs, goToTab, copyEl,
+    toggleRev, toggleTag,
+    renderContacts, updatePayload,
+    selectBlogVer, selectNlVer, switchPersona,
+    exportStructuredJSON, exportStructuredMarkdown,
+    renderCampaignLogPanel, renderPerformanceHistoryPanel,
+  } from "./ui.js";
+
+  // Expose to global scope (required for onclick= attributes in HTML)
+  Object.assign(window, {
+    runGenerate, regenBlog,
+    applyRevision, acceptRevision, discardRevision,
+    runSend,
+    runAnalytics,
+    runOptimize, useTopic, refineOptTopics, refineOptHeadlines,
+    goToTab, copyEl,
+    toggleRev, toggleTag,
+    selectBlogVer, selectNlVer, switchPersona,
+    exportStructuredJSON, exportStructuredMarkdown,
+    renderCampaignLogPanel, renderPerformanceHistoryPanel,
+  });
+
+  // Init
+  loadPersistedState();
+  initTabs();
+  renderContacts();
+  updatePayload();
+  renderCampaignLogPanel();
+  renderPerformanceHistoryPanel();
+</script>
+</body>
+</html>
